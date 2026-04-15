@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda Mensal — Igreja</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0c0f;--sf:#141417;--sf2:#1c1c21;--sf3:#222228;
+  --bd:rgba(255,255,255,.07);--bd2:rgba(255,255,255,.13);
+  --gold:#c9a96e;--gold2:#e2c99a;
+  --tx:#eeebe4;--mu:#6e6c78;--mu2:#9996a8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 45% at 10% 0%,rgba(201,169,110,.06) 0%,transparent 55%),
+             radial-gradient(ellipse 60% 40% at 90% 100%,rgba(55,138,221,.04) 0%,transparent 55%);}
+
+.wrap{max-width:1020px;margin:0 auto;padding:0 20px;position:relative;z-index:1;}
+
+/* HEADER */
+header{padding:52px 0 32px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.eyebrow::before,.eyebrow::after{content:'';display:block;width:22px;height:1px;background:var(--gold);opacity:.45;}
+h1{font-family:'Playfair Display',serif;font-size:clamp(28px,5vw,50px);font-weight:700;line-height:1.1;letter-spacing:-.02em;}
+.live-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:500;
+  padding:4px 12px;border-radius:99px;background:rgba(93,202,165,.1);border:1px solid rgba(93,202,165,.22);color:#5dcaa5;margin-top:8px;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#5dcaa5;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.updated{font-size:11px;color:var(--mu);margin-top:4px;}
+
+/* MONTH NAV */
+.mnav{display:flex;align-items:center;gap:10px;}
+.nbtn{width:36px;height:36px;border-radius:50%;border:1px solid var(--bd2);background:var(--sf);color:var(--mu2);
+  cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1;padding-bottom:1px;}
+.nbtn:hover{background:var(--sf2);color:var(--tx);border-color:var(--gold);}
+.mlabel{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;min-width:190px;text-align:center;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0 28px;}
+.stat{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:16px 18px;}
+.stat-n{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--gold2);line-height:1;}
+.stat-l{font-size:11px;color:var(--mu);margin-top:4px;}
+
+/* DIVIDER */
+.div{display:flex;align-items:center;gap:14px;margin:0 0 24px;}
+.div-l{flex:1;height:1px;background:var(--bd);}
+.div-d{width:7px;height:7px;background:var(--gold);transform:rotate(45deg);opacity:.5;}
+
+/* TABS */
+.tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--sf);padding:5px;border-radius:12px;border:1px solid var(--bd);width:fit-content;}
+.tbtn{font-size:12px;padding:7px 16px;border-radius:8px;border:none;background:transparent;color:var(--mu2);cursor:pointer;transition:all .18s;font-family:'DM Sans',sans-serif;}
+.tbtn:hover{color:var(--tx);}
+.tbtn.active{background:var(--sf2);color:var(--tx);}
+
+/* CHIPS */
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;}
+.chip{font-size:11px;padding:5px 13px;border-radius:99px;border:1px solid var(--bd);background:transparent;
+  color:var(--mu2);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.chip:hover{border-color:var(--bd2);color:var(--tx);}
+.chip.active{background:var(--gold);color:#0c0c0f;border-color:var(--gold);font-weight:500;}
+
+/* CALENDAR */
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--bd);border:1px solid var(--bd);border-radius:12px;overflow:hidden;margin-bottom:12px;}
+.calh{background:var(--sf2);padding:9px 4px;text-align:center;font-size:11px;font-weight:500;color:var(--mu2);letter-spacing:.05em;text-transform:uppercase;}
+.cald{background:var(--sf);padding:7px;min-height:96px;cursor:pointer;transition:background .13s;position:relative;}
+.cald:hover{background:var(--sf2);}
+.cald.other{opacity:.3;cursor:default;}
+.cald.other:hover{background:var(--sf);}
+.cald.today .dnum{background:var(--gold);color:#0c0c0f;border-radius:50%;}
+.dnum{width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--mu2);margin-bottom:4px;}
+.cevs{display:flex;flex-direction:column;gap:2px;}
+.cev{font-size:10px;padding:2px 5px;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:2px solid;line-height:1.4;}
+.cmore{font-size:10px;color:var(--mu);padding:1px 5px;}
+
+/* LIST */
+.dsec{margin-bottom:22px;animation:fu .35s ease both;}
+@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.dhdr{display:flex;align-items:center;gap:11px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--bd);}
+.dbar{width:3px;height:28px;border-radius:99px;flex-shrink:0;}
+.dinfo{flex:1;}
+.dname{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;}
+.ddate{font-size:11px;color:var(--mu);margin-top:1px;}
+.dcnt{font-size:11px;padding:2px 9px;border-radius:99px;border:1px solid var(--bd);color:var(--mu);}
+.evs{display:flex;flex-direction:column;gap:4px;}
+.ev{display:grid;grid-template-columns:46px 1fr auto;align-items:start;gap:10px;
+  padding:10px 13px;background:var(--sf);border:1px solid var(--bd);border-radius:8px;border-left:3px solid;transition:background .13s;}
+.ev:hover{background:var(--sf2);}
+.evtime{font-size:12px;font-weight:500;color:var(--mu2);font-variant-numeric:tabular-nums;padding-top:1px;}
+.evname{font-size:13px;color:var(--tx);line-height:1.35;}
+.evroom{font-size:11px;color:var(--mu);margin-top:2px;}
+.evtag{font-size:10px;font-weight:500;padding:2px 8px;border-radius:99px;border:1px solid;align-self:start;white-space:nowrap;}
+
+/* ROOM VIEW */
+.rsec{margin-bottom:7px;}
+.rhdr{display:flex;align-items:center;gap:10px;padding:11px 15px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;cursor:pointer;transition:background .13s;user-select:none;}
+.rhdr:hover,.rhdr.open{background:var(--sf2);}
+.rhdr.open{border-radius:10px 10px 0 0;}
+.rdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.rname{font-size:13px;color:var(--tx);flex:1;}
+.rcnt{font-size:11px;color:var(--mu);padding:2px 8px;border-radius:99px;border:1px solid var(--bd);}
+.rtog{font-size:18px;color:var(--mu);transition:transform .2s;line-height:1;}
+.rbody{border:1px solid var(--bd);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;margin-bottom:7px;}
+.rev{display:grid;grid-template-columns:120px 46px 1fr;align-items:center;gap:10px;
+  padding:8px 15px;background:var(--sf);border-top:1px solid var(--bd);border-left:3px solid;transition:background .13s;}
+.rev:first-child{border-top:none;}
+.rev:hover{background:var(--sf2);}
+.revday{font-size:11px;color:var(--mu2);}
+.revtime{font-size:12px;font-weight:500;color:var(--mu2);font-variant-numeric:tabular-nums;}
+.revname{font-size:12px;color:var(--tx);}
+
+/* MODAL */
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
+.mbox{background:var(--sf2);border:1px solid var(--bd2);border-radius:16px;padding:24px;max-width:500px;width:100%;max-height:82vh;overflow-y:auto;}
+.mtitle{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;margin-bottom:3px;}
+.msub{font-size:12px;color:var(--mu);margin-bottom:16px;}
+.mev{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd);}
+.mev:last-child{border-bottom:none;}
+.mevtime{font-size:13px;font-weight:500;min-width:40px;font-variant-numeric:tabular-nums;}
+.mevname{font-size:13px;line-height:1.35;}
+.mevroom{font-size:11px;color:var(--mu);margin-top:2px;}
+.mclose{display:block;width:100%;margin-top:16px;padding:10px;background:var(--sf);
+  border:1px solid var(--bd2);border-radius:8px;color:var(--mu2);cursor:pointer;font-size:13px;
+  font-family:'DM Sans',sans-serif;transition:all .15s;}
+.mclose:hover{color:var(--tx);border-color:var(--gold);}
+
+/* LOADING / ERROR */
+.loading{text-align:center;padding:80px 20px;color:var(--mu);}
+.spin{width:32px;height:32px;border:2px solid var(--bd2);border-top-color:var(--gold);
+  border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loadmsg{font-size:13px;color:var(--mu2);}
+.loadprog{margin-top:8px;font-size:11px;color:var(--mu);}
+.errbox{background:rgba(226,75,74,.08);border:1px solid rgba(226,75,74,.2);border-radius:10px;padding:18px 22px;color:#f09595;font-size:13px;margin:20px 0;line-height:1.6;}
+.errbox code{background:rgba(255,255,255,.07);padding:1px 5px;border-radius:4px;font-size:11px;}
+
+.hidden{display:none!important;}
+
+footer{text-align:center;padding:40px 0 24px;font-size:11px;color:var(--mu);}
+footer::before{content:'';display:block;height:1px;background:var(--bd);margin-bottom:18px;}
+
+@media(max-width:620px){
+  header{flex-direction:column;align-items:flex-start;}
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .ev{grid-template-columns:40px 1fr;}.evtag{display:none;}
+  .rev{grid-template-columns:80px 38px 1fr;}
+  .calgrid{font-size:9px;}
+  .cald{min-height:70px;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <div class="eyebrow">Agenda da Igreja</div>
+    <h1 id="h1">Carregando...</h1>
+    <div class="live-pill"><span class="live-dot"></span>Dados em tempo real · Qhoras</div>
+    <div class="updated" id="updated"></div>
+  </div>
+  <div class="mnav">
+    <button class="nbtn" id="btn-prev">&#8249;</button>
+    <div class="mlabel" id="mlabel">—</div>
+    <button class="nbtn" id="btn-next">&#8250;</button>
+  </div>
+</header>
+
+<div class="stats">
+  <div class="stat"><div class="stat-n" id="sn1">—</div><div class="stat-l">Eventos no mês</div></div>
+  <div class="stat"><div class="stat-n" id="sn2">—</div><div class="stat-l">Espaços utilizados</div></div>
+  <div class="stat"><div class="stat-n" id="sn3">—</div><div class="stat-l">Dias com eventos</div></div>
+  <div class="stat"><div class="stat-n" id="sn4">—</div><div class="stat-l">Dia mais cheio</div></div>
+</div>
+
+<div class="div"><div class="div-l"></div><div class="div-d"></div><div class="div-l"></div></div>
+
+<div class="tabs" id="tabs">
+  <button class="tbtn active" data-tab="cal">Calendário</button>
+  <button class="tbtn" data-tab="list">Por dia</button>
+  <button class="tbtn" data-tab="room">Por sala</button>
+</div>
+
+<div id="view-cal">
+  <div class="chips" id="chips-cal"></div>
+  <div id="cal-container"></div>
+</div>
+<div id="view-list" class="hidden">
+  <div class="chips" id="chips-list"></div>
+  <div id="list-container"></div>
+</div>
+<div id="view-room" class="hidden">
+  <div class="chips" id="chips-room"></div>
+  <div id="room-container"></div>
+</div>
+
+<div id="modal" class="moverlay hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+  <div class="mbox">
+    <div class="mtitle" id="m-title"></div>
+    <div class="msub" id="m-sub"></div>
+    <div id="m-events"></div>
+    <button class="mclose" onclick="document.getElementById('modal').classList.add('hidden')">Fechar</button>
+  </div>
+</div>
+
+<footer>Dados em tempo real · <strong style="color:var(--gold2)">reservar.qhoras.com</strong></footer>
+</div>
+
+<script>
+const BID   = 'a5f29667-f657-440f-a936-489cb7262573';
+const BASE  = 'https://reservation.qhoras.com/calendarPublic';
+const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const FDAYS  = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+const SDAYS  = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const DCOLORS = ['#c9a96e','#378add','#5dcaa5','#639922','#ef9f27','#d4537e','#7f77dd'];
+const RCOLORS = ['#c9a96e','#d85a30','#7f77dd','#5dcaa5','#378add','#d4537e','#639922','#ef9f27','#888780','#5dcaa5','#c9a96e','#7f77dd','#d85a30','#378add','#5dcaa5','#d4537e','#639922','#ef9f27','#888780','#c9a96e','#7f77dd','#d85a30','#378add'];
+
+let year = new Date().getFullYear();
+let month = new Date().getMonth();
+let rooms = [];
+let events = [];
+let tab = 'cal';
+let filter = 'Todos';
+let openRooms = new Set();
+let loading = false;
+
+// ── FETCH com fallback via proxy CORS ──
+// Tenta direto primeiro (funciona quando hospedado em servidor).
+// Se falhar por CORS/rede, tenta via proxy público gratuito.
+async function api(path) {
+  const url = BASE + path;
+
+  // Tentativa 1: direto
+  try {
+    const r = await fetch(url, { mode: 'cors' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  } catch (_) {}
+
+  // Tentativa 2: proxy CORS público (corsproxy.io)
+  try {
+    const proxy = 'https://corsproxy.io/?' + encodeURIComponent(url);
+    const r = await fetch(proxy);
+    if (!r.ok) throw new Error('HTTP proxy ' + r.status);
+    return await r.json();
+  } catch (_) {}
+
+  // Tentativa 3: allorigins
+  try {
+    const proxy2 = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+    const r = await fetch(proxy2);
+    if (!r.ok) throw new Error('HTTP allorigins ' + r.status);
+    return await r.json();
+  } catch (e) {
+    throw new Error('Não foi possível acessar a API do Qhoras. Verifique sua conexão ou hospede o arquivo em um servidor web.');
+  }
+}
+
+async function loadRooms() {
+  if (rooms.length) return;
+  const d = await api('/rooms/' + BID + '?page=1&limit=1000');
+  rooms = (d.rooms || d).map((r, i) => ({
+    id: r.id, name: r.name.trim(), color: RCOLORS[i % RCOLORS.length]
+  }));
+}
+
+function pad2(n) { return String(n).padStart(2,'0'); }
+function fmtDate(d) { return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
+
+async function loadEvents() {
+  const start = fmtDate(new Date(year, month, 1)) + '+00:00:00';
+  const end   = fmtDate(new Date(year, month+1, 0)) + '+23:59:59';
+
+  const results = await Promise.allSettled(
+    rooms.map(room =>
+      api(`/appointments/${BID}/${room.id}?start=${start}&end=${end}&includeCancelled=false`)
+        .then(data => (Array.isArray(data) ? data : []).map(a => ({
+          name:   a.name || a.title || 'Reserva',
+          date:   a.date ? a.date.substring(0,10) : null,
+          start:  a.date ? a.date.substring(11,16) : '00:00',
+          end:    a.endDate ? new Date(a.endDate).toISOString().substring(11,16) : null,
+          roomId: room.id,
+          room:   room.name,
+          color:  room.color,
+        })))
+    )
+  );
+
+  events = results
+    .filter(r => r.status === 'fulfilled')
+    .flatMap(r => r.value)
+    .filter(e => e.date && e.name !== 'Reserva Privada');
+}
+
+// ── MAIN ──
+async function load() {
+  if (loading) return;
+  loading = true;
+  showLoading();
+  updateHeader();
+  try {
+    await loadRooms();
+    await loadEvents();
+    updateStats();
+    render();
+    document.getElementById('updated').textContent =
+      'Atualizado às ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  } catch(e) {
+    showError(e);
+  } finally {
+    loading = false;
+  }
+}
+
+function updateHeader() {
+  const lbl = MONTHS[month] + ' ' + year;
+  document.getElementById('h1').textContent = lbl;
+  document.getElementById('mlabel').textContent = lbl;
+  document.title = 'Agenda ' + lbl + ' — Igreja';
+}
+
+function updateStats() {
+  const days = new Set(events.map(e=>e.date));
+  const rms  = new Set(events.map(e=>e.roomId));
+  const cnt  = {};
+  events.forEach(e => { cnt[e.date] = (cnt[e.date]||0)+1; });
+  const busy = Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0];
+  const bd   = busy ? new Date(busy[0]+'T12:00:00') : null;
+  document.getElementById('sn1').textContent = events.length;
+  document.getElementById('sn2').textContent = rms.size;
+  document.getElementById('sn3').textContent = days.size;
+  document.getElementById('sn4').textContent = bd ? `${pad2(bd.getDate())}/${pad2(bd.getMonth()+1)}` : '—';
+}
+
+function showLoading(msg) {
+  const html = `<div class="loading"><div class="spin"></div><div class="loadmsg">${msg||'Carregando '+MONTHS[month]+'...'}</div><div class="loadprog" id="lprog"></div></div>`;
+  ['cal-container','list-container','room-container'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  });
+  ['sn1','sn2','sn3','sn4'].forEach(id => { document.getElementById(id).textContent = '—'; });
+}
+
+function showError(e) {
+  const html = `<div class="errbox">
+    <strong>Não foi possível carregar os dados.</strong><br><br>
+    ${e.message || e}<br><br>
+    <strong>Como resolver:</strong><br>
+    • <strong>Opção mais fácil:</strong> Abra o arquivo via servidor local. No terminal:<br>
+    &nbsp;&nbsp;<code>python3 -m http.server 8080</code> → acesse <code>http://localhost:8080</code><br>
+    • <strong>Opção simples:</strong> Use a extensão <em>Live Server</em> no VS Code<br>
+    • <strong>Online:</strong> Suba o arquivo para GitHub Pages, Vercel ou Netlify (gratuito)<br><br>
+    <button onclick="load()" style="padding:6px 16px;border-radius:8px;border:1px solid #f09595;background:transparent;color:#f09595;cursor:pointer;font-size:12px">Tentar novamente</button>
+  </div>`;
+  ['cal-container','list-container','room-container'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  });
+}
+
+// ── FILTER ──
+function filtered() {
+  return filter === 'Todos' ? events : events.filter(e => e.room === filter);
+}
+
+function buildChips(id) {
+  const el = document.getElementById(id);
+  el.innerHTML = '';
+  const used = new Set(events.map(e=>e.room));
+  ['Todos', ...rooms.filter(r=>used.has(r.name)).map(r=>r.name)].forEach(opt => {
+    const c = document.createElement('button');
+    c.className = 'chip' + (opt===filter?' active':'');
+    c.textContent = opt==='Todos' ? 'Todos os espaços' : opt.replace(/\s*\(.*\)/,'').trim();
+    c.title = opt;
+    c.onclick = () => { filter=opt; render(); };
+    el.appendChild(c);
+  });
+}
+
+// ── RENDER ──
+function render() {
+  buildChips('chips-cal');
+  buildChips('chips-list');
+  buildChips('chips-room');
+  if (tab==='cal')  renderCal();
+  if (tab==='list') renderList();
+  if (tab==='room') renderRoom();
+}
+
+// ── CALENDAR ──
+function renderCal() {
+  const evs = filtered();
+  const map = {};
+  evs.forEach(e => { (map[e.date]||(map[e.date]=[])).push(e); });
+
+  const container = document.getElementById('cal-container');
+  container.innerHTML = '';
+  const grid = document.createElement('div');
+  grid.className = 'calgrid';
+
+  SDAYS.forEach(d => {
+    const h = document.createElement('div');
+    h.className = 'calh';
+    h.textContent = d;
+    grid.appendChild(h);
+  });
+
+  const first = new Date(year,month,1).getDay();
+  const dim   = new Date(year,month+1,0).getDate();
+  const prevDim = new Date(year,month,0).getDate();
+  const today = new Date();
+  const total = Math.ceil((first+dim)/7)*7;
+
+  for (let i=0; i<total; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cald';
+    let d, cur=true;
+
+    if (i < first) {
+      d = new Date(year,month-1,prevDim-first+i+1); cur=false; cell.classList.add('other');
+    } else if (i-first >= dim) {
+      d = new Date(year,month+1,i-first-dim+1); cur=false; cell.classList.add('other');
+    } else {
+      d = new Date(year,month,i-first+1);
+    }
+
+    if (d.toDateString()===today.toDateString()) cell.classList.add('today');
+
+    const ds = fmtDate(d);
+    const dayEvs = (map[ds]||[]).sort((a,b)=>a.start.localeCompare(b.start));
+
+    const dn = document.createElement('div');
+    dn.className = 'dnum';
+    dn.textContent = d.getDate();
+    cell.appendChild(dn);
+
+    const ec = document.createElement('div');
+    ec.className = 'cevs';
+    const MAX = 3;
+    dayEvs.slice(0,MAX).forEach(ev => {
+      const el = document.createElement('div');
+      el.className = 'cev';
+      el.style.borderLeftColor = ev.color;
+      el.style.background = ev.color+'18';
+      el.style.color = ev.color;
+      el.textContent = ev.start+' '+ev.name;
+      el.title = `${ev.start} – ${ev.name} (${ev.room})`;
+      ec.appendChild(el);
+    });
+    if (dayEvs.length>MAX) {
+      const m = document.createElement('div');
+      m.className = 'cmore';
+      m.textContent = '+' + (dayEvs.length-MAX) + ' mais';
+      ec.appendChild(m);
+    }
+    cell.appendChild(ec);
+    if (cur && dayEvs.length) cell.onclick = () => openModal(d,dayEvs);
+    grid.appendChild(cell);
+  }
+  container.appendChild(grid);
+}
+
+// ── LIST ──
+function renderList() {
+  const evs = filtered();
+  const container = document.getElementById('list-container');
+  container.innerHTML = '';
+  if (!evs.length) { container.innerHTML='<div class="loading">Nenhum evento encontrado.</div>'; return; }
+
+  const byDate = {};
+  evs.forEach(e => { (byDate[e.date]||(byDate[e.date]=[])).push(e); });
+
+  Object.keys(byDate).sort().forEach((date,di) => {
+    const dayEvs = byDate[date].sort((a,b)=>a.start.localeCompare(b.start));
+    const d = new Date(date+'T12:00:00');
+    const col = DCOLORS[d.getDay()];
+
+    const sec = document.createElement('div');
+    sec.className = 'dsec';
+    sec.style.animationDelay = (di*.04)+'s';
+    sec.innerHTML = `<div class="dhdr">
+      <div class="dbar" style="background:${col}"></div>
+      <div class="dinfo">
+        <div class="dname">${FDAYS[d.getDay()]}</div>
+        <div class="ddate">${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}</div>
+      </div>
+      <div class="dcnt">${dayEvs.length} evento${dayEvs.length>1?'s':''}</div>
+    </div><div class="evs" id="ev-${date}"></div>`;
+    container.appendChild(sec);
+
+    const grid = sec.querySelector('.evs');
+    dayEvs.forEach(ev => {
+      const card = document.createElement('div');
+      card.className = 'ev';
+      card.style.borderLeftColor = ev.color;
+      card.innerHTML = `<span class="evtime">${ev.start}</span>
+        <div><div class="evname">${ev.name}</div><div class="evroom">${ev.room}</div></div>
+        <span class="evtag" style="background:${ev.color}1a;color:${ev.color};border-color:${ev.color}33">${ev.room.replace(/\s*\(.*\)/,'').trim().split(' ').slice(0,2).join(' ')}</span>`;
+      grid.appendChild(card);
+    });
+  });
+}
+
+// ── ROOM VIEW ──
+function renderRoom() {
+  const evs = filtered();
+  const container = document.getElementById('room-container');
+  container.innerHTML = '';
+  if (!evs.length) { container.innerHTML='<div class="loading">Nenhum evento encontrado.</div>'; return; }
+
+  const byRoom = {};
+  evs.forEach(e => {
+    if (!byRoom[e.roomId]) byRoom[e.roomId] = {name:e.room, color:e.color, evs:[]};
+    byRoom[e.roomId].evs.push(e);
+  });
+
+  Object.values(byRoom).sort((a,b)=>a.name.localeCompare(b.name)).forEach(r => {
+    const open = openRooms.has(r.name);
+    const sec = document.createElement('div');
+    sec.className = 'rsec';
+    const hdr = document.createElement('div');
+    hdr.className = 'rhdr'+(open?' open':'');
+    hdr.innerHTML = `<div class="rdot" style="background:${r.color}"></div>
+      <span class="rname">${r.name}</span>
+      <span class="rcnt">${r.evs.length} evento${r.evs.length>1?'s':''}</span>
+      <span class="rtog" style="transform:rotate(${open?90:0}deg)">›</span>`;
+    hdr.onclick = () => { open?openRooms.delete(r.name):openRooms.add(r.name); renderRoom(); };
+    sec.appendChild(hdr);
+    if (open) {
+      const body = document.createElement('div');
+      body.className = 'rbody';
+      [...r.evs].sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start)).forEach(ev => {
+        const d = new Date(ev.date+'T12:00:00');
+        const card = document.createElement('div');
+        card.className = 'rev';
+        card.style.borderLeftColor = r.color;
+        card.innerHTML = `<span class="revday">${FDAYS[d.getDay()].split('-')[0].trim()}, ${pad2(d.getDate())}/${pad2(d.getMonth()+1)}</span>
+          <span class="revtime">${ev.start}</span>
+          <span class="revname">${ev.name}</span>`;
+        body.appendChild(card);
+      });
+      sec.appendChild(body);
+    }
+    container.appendChild(sec);
+  });
+}
+
+// ── MODAL ──
+function openModal(date, dayEvs) {
+  document.getElementById('m-title').textContent = FDAYS[date.getDay()];
+  document.getElementById('m-sub').textContent =
+    `${pad2(date.getDate())}/${pad2(date.getMonth()+1)}/${date.getFullYear()} · ${dayEvs.length} evento${dayEvs.length>1?'s':''}`;
+  const c = document.getElementById('m-events');
+  c.innerHTML = '';
+  dayEvs.sort((a,b)=>a.start.localeCompare(b.start)).forEach(ev => {
+    const el = document.createElement('div');
+    el.className = 'mev';
+    el.innerHTML = `<span class="mevtime" style="color:${ev.color}">${ev.start}</span>
+      <div><div class="mevname">${ev.name}</div>
+      <div class="mevroom">${ev.room}${ev.end?' · até '+ev.end:''}</div></div>`;
+    c.appendChild(el);
+  });
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+// ── TABS ──
+document.getElementById('tabs').addEventListener('click', e => {
+  if (!e.target.dataset.tab) return;
+  tab = e.target.dataset.tab;
+  document.querySelectorAll('.tbtn').forEach(b => b.classList.toggle('active', b.dataset.tab===tab));
+  document.getElementById('view-cal').classList.toggle('hidden', tab!=='cal');
+  document.getElementById('view-list').classList.toggle('hidden', tab!=='list');
+  document.getElementById('view-room').classList.toggle('hidden', tab!=='room');
+  render();
+});
+
+// ── MONTH NAV ──
+document.getElementById('btn-prev').onclick = () => {
+  month--; if(month<0){month=11;year--;} filter='Todos'; load();
+};
+document.getElementById('btn-next').onclick = () => {
+  month++; if(month>11){month=0;year++;} filter='Todos'; load();
+};
+
+// ── AUTO-REFRESH 5min ──
+setInterval(load, 5*60*1000);
+
+// ── BOOT ──
+load();
+</script>
+</body>
+</html>
