@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Agenda da Igreja</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0c0c0f; --sf:#141417; --sf2:#1c1c21; --sf3:#242429;
+  --bd:rgba(255,255,255,.07); --bd2:rgba(255,255,255,.13); --bd3:rgba(255,255,255,.2);
+  --gold:#c9a96e; --gold2:#e2c99a; --gold3:#a8845a;
+  --tx:#eeebe4; --mu:#6e6c78; --mu2:#9996a8;
+  --red:#e24b4a; --red2:rgba(226,75,74,.12); --red3:rgba(226,75,74,.25);
+  --green:#5dcaa5; --green2:rgba(93,202,165,.12);
+  --blue:#378add; --blue2:rgba(55,138,221,.12);
+  --warn:#ef9f27; --warn2:rgba(239,159,39,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 70% 50% at 15% 0%,rgba(201,169,110,.055) 0%,transparent 60%),
+             radial-gradient(ellipse 50% 40% at 85% 100%,rgba(55,138,221,.035) 0%,transparent 60%);}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:var(--bg);}
+#login-screen::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(201,169,110,.06) 0%,transparent 65%);}
+.login-box{position:relative;z-index:1;width:100%;max-width:380px;padding:0 24px;}
+.login-mark{text-align:center;margin-bottom:36px;}
+.login-cross{display:inline-flex;flex-direction:column;align-items:center;gap:0;margin-bottom:16px;position:relative;}
+.login-cross::before{content:'';display:block;width:1px;height:32px;background:var(--gold);opacity:.5;}
+.login-cross::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:32px;height:1px;background:var(--gold);opacity:.5;}
+.login-cross-dot{width:6px;height:6px;background:var(--gold);transform:rotate(45deg);}
+.login-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;letter-spacing:-.01em;color:var(--tx);}
+.login-sub{font-size:12px;color:var(--mu);margin-top:6px;letter-spacing:.08em;text-transform:uppercase;}
+.login-field{margin-bottom:12px;}
+.login-label{display:block;font-size:11px;color:var(--mu2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+.login-input{width:100%;background:var(--sf);border:1px solid var(--bd2);border-radius:10px;
+  padding:12px 15px;color:var(--tx);font-size:14px;font-family:'DM Sans',sans-serif;
+  outline:none;transition:border-color .15s;}
+.login-input:focus{border-color:var(--gold);}
+.login-input::placeholder{color:var(--mu);}
+.login-err{font-size:12px;color:var(--red);margin-top:8px;min-height:16px;display:flex;align-items:center;gap:6px;}
+.login-btn{width:100%;margin-top:8px;padding:13px;background:var(--gold);color:#0c0c0f;
+  border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .15s;letter-spacing:.02em;}
+.login-btn:hover{background:var(--gold2);}
+.login-hint{font-size:11px;color:var(--mu);text-align:center;margin-top:20px;line-height:1.6;}
+.login-hint code{background:var(--sf);padding:1px 6px;border-radius:4px;font-family:'DM Mono',monospace;font-size:10px;color:var(--mu2);}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1100px;margin:0 auto;padding:0 24px;position:relative;z-index:1;}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:24px 0 20px;border-bottom:1px solid var(--bd);gap:12px;flex-wrap:wrap;}
+.topbar-left{display:flex;align-items:center;gap:14px;}
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--mu2);
+  text-decoration:none;padding:6px 12px;border-radius:8px;border:1px solid var(--bd);
+  background:var(--sf);transition:all .15s;}
+.back-btn:hover{color:var(--tx);border-color:var(--bd2);}
+.admin-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:500;
+  padding:4px 11px;border-radius:99px;background:var(--warn2);border:1px solid rgba(239,159,39,.3);color:var(--warn);}
+.admin-dot{width:5px;height:5px;border-radius:50%;background:var(--warn);}
+.topbar-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;}
+.logout-btn{font-size:12px;padding:7px 14px;border-radius:8px;border:1px solid var(--bd2);
+  background:transparent;color:var(--mu2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.logout-btn:hover{color:var(--red);border-color:var(--red3);}
+
+/* ── CONTROLS ── */
+.controls{display:flex;align-items:center;justify-content:space-between;padding:20px 0 16px;gap:12px;flex-wrap:wrap;}
+.mnav{display:flex;align-items:center;gap:8px;}
+.nbtn{width:34px;height:34px;border-radius:50%;border:1px solid var(--bd2);background:var(--sf);
+  color:var(--mu2);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.nbtn:hover{background:var(--sf2);color:var(--tx);border-color:var(--gold);}
+.mlabel{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;min-width:160px;text-align:center;}
+.ctrl-right{display:flex;align-items:center;gap:8px;}
+.filter-btn{font-size:11px;padding:6px 13px;border-radius:8px;border:1px solid var(--bd);background:var(--sf);
+  color:var(--mu2);cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;}
+.filter-btn.active{background:var(--gold);color:#0c0c0f;border-color:var(--gold);font-weight:500;}
+.filter-btn:hover:not(.active){color:var(--tx);border-color:var(--bd2);}
+.save-all-btn{font-size:12px;padding:7px 16px;border-radius:8px;border:1px solid rgba(93,202,165,.35);
+  background:var(--green2);color:var(--green);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;display:none;}
+.save-all-btn.visible{display:flex;align-items:center;gap:6px;}
+.save-all-btn:hover{background:rgba(93,202,165,.2);}
+
+/* ── STATS ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px;}
+.stat{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:13px 15px;}
+.stat-n{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold2);line-height:1;}
+.stat-l{font-size:11px;color:var(--mu);margin-top:3px;}
+
+/* ── TABLE ── */
+.table-wrap{background:var(--sf);border:1px solid var(--bd);border-radius:12px;overflow:hidden;margin-bottom:32px;}
+.table-head{display:grid;grid-template-columns:110px 1fr 160px 140px 100px 90px;gap:0;
+  background:var(--sf2);border-bottom:1px solid var(--bd);}
+.th{padding:10px 14px;font-size:10px;font-weight:500;color:var(--mu);letter-spacing:.08em;text-transform:uppercase;}
+
+.ev-row{display:grid;grid-template-columns:110px 1fr 160px 140px 100px 90px;gap:0;
+  border-bottom:1px solid var(--bd);transition:background .12s;position:relative;}
+.ev-row:last-child{border-bottom:none;}
+.ev-row:hover{background:var(--sf2);}
+.ev-row.hidden-ev{opacity:.45;}
+.ev-row.edited{background:rgba(239,159,39,.04);}
+.ev-row.edited::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--warn);}
+
+.td{padding:10px 14px;font-size:12px;display:flex;align-items:center;}
+.td-date{flex-direction:column;align-items:flex-start;gap:1px;}
+.date-day{font-weight:500;color:var(--tx);font-size:12px;}
+.date-weekday{font-size:10px;color:var(--mu);}
+.date-time{font-size:11px;color:var(--mu2);font-family:'DM Mono',monospace;margin-top:2px;}
+
+/* editable fields */
+.editable{background:transparent;border:1px solid transparent;border-radius:6px;
+  padding:4px 7px;color:var(--tx);font-size:12px;font-family:'DM Sans',sans-serif;
+  width:100%;outline:none;transition:all .15s;}
+.editable:hover{border-color:var(--bd2);}
+.editable:focus{border-color:var(--gold);background:var(--sf3);}
+.editable.changed{border-color:rgba(239,159,39,.4);background:rgba(239,159,39,.04);}
+
+select.editable{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236e6c78' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;padding-right:24px;}
+
+.td-time{gap:4px;flex-direction:column;align-items:flex-start;}
+.time-inputs{display:flex;align-items:center;gap:4px;width:100%;}
+.time-sep{color:var(--mu);font-size:11px;}
+input[type="time"].editable{width:70px;font-family:'DM Mono',monospace;font-size:11px;}
+
+/* toggle visibility */
+.vis-toggle{display:flex;align-items:center;justify-content:center;width:100%;}
+.toggle{position:relative;width:36px;height:20px;cursor:pointer;}
+.toggle input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-track{position:absolute;inset:0;border-radius:99px;background:var(--sf3);border:1px solid var(--bd2);transition:all .2s;}
+.toggle input:checked ~ .toggle-track{background:var(--green);border-color:var(--green);}
+.toggle-thumb{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--mu2);transition:all .2s;}
+.toggle input:checked ~ .toggle-thumb{left:18px;background:#fff;}
+
+/* row actions */
+.td-actions{gap:5px;justify-content:flex-end;}
+.row-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--bd);background:transparent;
+  color:var(--mu);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:13px;transition:all .15s;flex-shrink:0;}
+.row-btn:hover{background:var(--sf2);color:var(--tx);border-color:var(--bd2);}
+.row-btn.save{color:var(--green);border-color:rgba(93,202,165,.3);}
+.row-btn.save:hover{background:var(--green2);}
+.row-btn.discard{color:var(--mu);}
+.row-btn.discard:hover{color:var(--red);border-color:var(--red3);background:var(--red2);}
+
+/* empty */
+.empty{text-align:center;padding:60px 20px;color:var(--mu);}
+.empty-icon{font-size:32px;margin-bottom:12px;opacity:.4;}
+
+/* loading */
+.loading{text-align:center;padding:60px 20px;color:var(--mu);}
+.spin{width:28px;height:28px;border:2px solid var(--bd2);border-top-color:var(--gold);
+  border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* toast */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:500;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast{padding:10px 16px;border-radius:10px;font-size:13px;animation:tin .25s ease;
+  display:flex;align-items:center;gap:8px;pointer-events:auto;border:1px solid;}
+.toast.ok{background:var(--green2);border-color:rgba(93,202,165,.3);color:var(--green);}
+.toast.err{background:var(--red2);border-color:var(--red3);color:var(--red);}
+.toast.info{background:var(--warn2);border-color:rgba(239,159,39,.3);color:var(--warn);}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tout{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(8px)}}
+
+/* info bar */
+.info-bar{background:var(--blue2);border:1px solid rgba(55,138,221,.2);border-radius:10px;
+  padding:11px 16px;font-size:12px;color:#85b7eb;margin-bottom:20px;display:flex;align-items:center;gap:10px;line-height:1.5;}
+.info-bar strong{color:var(--blue);}
+
+/* unsaved indicator */
+.unsaved-bar{background:var(--warn2);border:1px solid rgba(239,159,39,.25);border-radius:10px;
+  padding:10px 16px;font-size:12px;color:var(--warn);margin-bottom:16px;
+  display:none;align-items:center;justify-content:space-between;gap:12px;}
+.unsaved-bar.visible{display:flex;}
+
+.hidden-screen{display:none!important;}
+
+/* room chip */
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px;}
+.chip{font-size:11px;padding:4px 12px;border-radius:99px;border:1px solid var(--bd);background:transparent;
+  color:var(--mu2);cursor:pointer;transition:all .13s;white-space:nowrap;}
+.chip:hover{color:var(--tx);border-color:var(--bd2);}
+.chip.active{background:var(--gold);color:#0c0c0f;border-color:var(--gold);font-weight:500;}
+
+footer{text-align:center;padding:32px 0 20px;font-size:11px;color:var(--mu);}
+footer::before{content:'';display:block;height:1px;background:var(--bd);margin-bottom:14px;}
+
+@media(max-width:900px){
+  .table-head,.ev-row{grid-template-columns:95px 1fr 130px 90px 90px;} 
+  .th:nth-child(4),.td:nth-child(4){display:none;}
+}
+@media(max-width:640px){
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .table-head,.ev-row{grid-template-columns:80px 1fr 80px 80px;}
+  .th:nth-child(3),.td:nth-child(3),.th:nth-child(4),.td:nth-child(4){display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-mark">
+      <div class="login-cross">
+        <span class="login-cross-dot"></span>
+      </div>
+      <div class="login-title">Administração</div>
+      <div class="login-sub">Agenda da Igreja</div>
+    </div>
+    <div class="login-field">
+      <label class="login-label">Senha de acesso</label>
+      <input class="login-input" type="password" id="pwd-input" placeholder="Digite a senha..." autocomplete="current-password">
+      <div class="login-err" id="login-err"></div>
+    </div>
+    <button class="login-btn" id="login-btn">Entrar</button>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin-screen" class="hidden-screen">
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="index.html" class="back-btn">← Voltar ao calendário</a>
+      <span class="admin-badge"><span class="admin-dot"></span>Admin</span>
+    </div>
+    <div class="topbar-title">Editor de Eventos</div>
+    <button class="logout-btn" id="logout-btn">Sair</button>
+  </div>
+
+  <div style="padding-top:20px;">
+
+    <div class="info-bar">
+      ℹ️ As edições ficam salvas <strong>neste navegador</strong>. Para exportar as alterações para outros dispositivos, use o botão <strong>"Exportar JSON"</strong> e importe no outro dispositivo.
+    </div>
+
+    <div class="unsaved-bar" id="unsaved-bar">
+      <span>⚠️ Você tem alterações não salvas — confirme linha por linha ou use "Salvar tudo".</span>
+      <div style="display:flex;gap:8px;flex-shrink:0;">
+        <button class="save-all-btn visible" id="save-all-btn" style="margin:0">✓ Salvar tudo</button>
+        <button class="filter-btn" id="export-btn">⬇ Exportar JSON</button>
+        <button class="filter-btn" id="import-btn">⬆ Importar JSON</button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="mnav">
+        <button class="nbtn" id="btn-prev">&#8249;</button>
+        <div class="mlabel" id="mlabel">—</div>
+        <button class="nbtn" id="btn-next">&#8250;</button>
+      </div>
+      <div class="ctrl-right">
+        <button class="filter-btn active" id="filter-all">Todos</button>
+        <button class="filter-btn" id="filter-visible">Visíveis</button>
+        <button class="filter-btn" id="filter-hidden">Ocultos</button>
+        <button class="filter-btn" id="export-btn2">⬇ Exportar</button>
+        <input type="file" id="import-file" accept=".json" style="display:none">
+        <button class="filter-btn" id="import-btn2">⬆ Importar</button>
+      </div>
+    </div>
+
+    <div class="chips" id="room-chips"></div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-n" id="sn1">—</div><div class="stat-l">Eventos no mês</div></div>
+      <div class="stat"><div class="stat-n" id="sn2">—</div><div class="stat-l">Ocultos</div></div>
+      <div class="stat"><div class="stat-n" id="sn3">—</div><div class="stat-l">Com edições</div></div>
+      <div class="stat"><div class="stat-n" id="sn4">—</div><div class="stat-l">Espaços</div></div>
+    </div>
+
+    <div class="table-wrap" id="table-wrap">
+      <div class="table-head">
+        <div class="th">Data</div>
+        <div class="th">Nome do evento</div>
+        <div class="th">Sala / Local</div>
+        <div class="th">Horário</div>
+        <div class="th">Visível</div>
+        <div class="th" style="text-align:right">Ações</div>
+      </div>
+      <div id="ev-list">
+        <div class="loading"><div class="spin"></div><div style="font-size:13px;color:var(--mu2)">Carregando eventos...</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<footer>Editor de Eventos · Agenda da Igreja · Dados via Qhoras</footer>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+<input type="file" id="import-file" accept=".json" style="display:none">
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────
+const BID = 'a5f29667-f657-440f-a936-489cb7262573';
+const PROXY_URL = 'https://SEU-WORKER.workers.dev'; // mesmo do index.html
+const DIRECT = 'https://reservation.qhoras.com/calendarPublic';
+const DEFAULT_PWD = 'admin123';
+const STORAGE_KEY = 'igrejaDaAgenda_overrides'; // overrides salvos
+const PWD_KEY = 'adminPwd';
+// ──────────────────────────────────────────────────────
+
+const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const FDAYS_SHORT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const RCOLORS = ['#c9a96e','#d85a30','#7f77dd','#5dcaa5','#378add','#d4537e','#639922','#ef9f27','#888780','#5dcaa5','#c9a96e','#7f77dd','#d85a30','#378add','#5dcaa5','#d4537e','#639922','#ef9f27'];
+
+let year = new Date().getFullYear();
+let month = new Date().getMonth();
+let rooms = [];
+let rawEvents = []; // original da API
+let overrides = {}; // { [eventId]: { name, start, end, roomId, hidden } }
+let pendingChanges = {}; // edições ainda não salvas na linha
+let filterVis = 'all'; // all | visible | hidden
+let filterRoom = 'Todos';
+
+// ─── AUTH ─────────────────────────────────────────────
+function getStoredPwd() { return localStorage.getItem(PWD_KEY) || DEFAULT_PWD; }
+function isLoggedIn() { return sessionStorage.getItem('adminAuth') === '1'; }
+
+document.getElementById('login-btn').onclick = doLogin;
+document.getElementById('pwd-input').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
+
+function doLogin() {
+  const val = document.getElementById('pwd-input').value;
+  const err = document.getElementById('login-err');
+  if (val === getStoredPwd()) {
+    sessionStorage.setItem('adminAuth', '1');
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-screen').classList.remove('hidden-screen');
+    init();
+  } else {
+    err.textContent = '✕ Senha incorreta';
+    document.getElementById('pwd-input').value = '';
+    setTimeout(() => { err.textContent = ''; }, 2500);
+  }
+}
+
+document.getElementById('logout-btn').onclick = () => {
+  sessionStorage.removeItem('adminAuth');
+  location.reload();
+};
+
+if (isLoggedIn()) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-screen').classList.remove('hidden-screen');
+}
+
+// ─── OVERRIDES STORAGE ────────────────────────────────
+function loadOverrides() {
+  try { overrides = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(_) { overrides = {}; }
+}
+function saveOverrides() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
+}
+function getOverride(id) { return overrides[id] || {}; }
+function setOverride(id, data) {
+  overrides[id] = { ...(overrides[id] || {}), ...data };
+  saveOverrides();
+}
+
+// ─── API ──────────────────────────────────────────────
+async function api(path) {
+  try { const r = await fetch(DIRECT + path); if(r.ok) return r.json(); } catch(_) {}
+  const workerOk = !PROXY_URL.includes('SEU-WORKER');
+  if (!workerOk) throw new Error('Proxy não configurado. Veja README.md.');
+  const r = await fetch(PROXY_URL + path);
+  if (!r.ok) throw new Error('Proxy HTTP ' + r.status);
+  return r.json();
+}
+
+async function loadRooms() {
+  if (rooms.length) return;
+  const d = await api('/rooms/' + BID + '?page=1&limit=1000');
+  rooms = (d.rooms || d).map((r,i) => ({ id: r.id, name: r.name.trim(), color: RCOLORS[i % RCOLORS.length] }));
+}
+
+function pad2(n){ return String(n).padStart(2,'0'); }
+function fmtDate(d){ return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
+
+async function loadEvents() {
+  const start = fmtDate(new Date(year, month, 1)) + '+00:00:00';
+  const end   = fmtDate(new Date(year, month+1, 0)) + '+23:59:59';
+  const results = await Promise.allSettled(
+    rooms.map(room =>
+      api(`/appointments/${BID}/${room.id}?start=${start}&end=${end}&includeCancelled=false`)
+        .then(data => (Array.isArray(data) ? data : []).map(a => ({
+          id: a.id,
+          name: a.name || a.title || 'Reserva',
+          date: a.date ? a.date.substring(0,10) : null,
+          start: a.date ? a.date.substring(11,16) : '00:00',
+          end: a.endDate ? new Date(a.endDate).toISOString().substring(11,16) : null,
+          roomId: room.id, room: room.name, color: room.color,
+        })))
+    )
+  );
+  rawEvents = results
+    .filter(r => r.status==='fulfilled')
+    .flatMap(r => r.value)
+    .filter(e => e.date)
+    .sort((a,b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
+}
+
+// ─── EFFECTIVE EVENT (applies overrides) ──────────────
+function effective(ev) {
+  const ov = getOverride(ev.id);
+  const roomObj = rooms.find(r => r.id === (ov.roomId || ev.roomId)) || { name: ev.room, color: ev.color };
+  return {
+    ...ev,
+    name:   ov.name  !== undefined ? ov.name  : ev.name,
+    start:  ov.start !== undefined ? ov.start : ev.start,
+    end:    ov.end   !== undefined ? ov.end   : ev.end,
+    roomId: ov.roomId || ev.roomId,
+    room:   roomObj.name,
+    color:  roomObj.color,
+    hidden: ov.hidden || false,
+    edited: Object.keys(ov).length > 0,
+  };
+}
+
+// ─── STATS ────────────────────────────────────────────
+function updateStats(evs) {
+  const hidden = evs.filter(e => effective(e).hidden).length;
+  const edited = evs.filter(e => Object.keys(getOverride(e.id)).length > 0).length;
+  const roomsUsed = new Set(evs.map(e => e.roomId)).size;
+  document.getElementById('sn1').textContent = evs.length;
+  document.getElementById('sn2').textContent = hidden;
+  document.getElementById('sn3').textContent = edited;
+  document.getElementById('sn4').textContent = roomsUsed;
+}
+
+// ─── ROOM CHIPS ───────────────────────────────────────
+function buildRoomChips() {
+  const used = new Set(rawEvents.map(e => e.roomId));
+  const wrap = document.getElementById('room-chips');
+  wrap.innerHTML = '';
+  ['Todos', ...rooms.filter(r => used.has(r.id))].forEach(r => {
+    const name = r === 'Todos' ? 'Todos' : r.name;
+    const c = document.createElement('button');
+    c.className = 'chip' + (filterRoom === name ? ' active' : '');
+    c.textContent = name === 'Todos' ? 'Todos os espaços' : name.replace(/\s*\(.*\)/,'').trim();
+    c.onclick = () => { filterRoom = name; buildRoomChips(); renderTable(); };
+    wrap.appendChild(c);
+  });
+}
+
+// ─── FILTER ───────────────────────────────────────────
+function filtered() {
+  return rawEvents.filter(e => {
+    const ef = effective(e);
+    const visOk = filterVis === 'all' || (filterVis === 'visible' && !ef.hidden) || (filterVis === 'hidden' && ef.hidden);
+    const roomOk = filterRoom === 'Todos' || ef.room === filterRoom;
+    return visOk && roomOk;
+  });
+}
+
+// ─── RENDER TABLE ─────────────────────────────────────
+function renderTable() {
+  updateStats(rawEvents);
+  const evs = filtered();
+  const list = document.getElementById('ev-list');
+  list.innerHTML = '';
+
+  if (!evs.length) {
+    list.innerHTML = `<div class="empty"><div class="empty-icon">📭</div>Nenhum evento encontrado para este filtro.</div>`;
+    return;
+  }
+
+  evs.forEach(ev => {
+    const ef = effective(ev);
+    const pending = pendingChanges[ev.id] || {};
+    const hasPending = Object.keys(pending).length > 0;
+    const hasOverride = Object.keys(getOverride(ev.id)).length > 0;
+
+    const d = new Date(ev.date + 'T12:00:00');
+    const weekday = FDAYS_SHORT[d.getDay()];
+
+    const row = document.createElement('div');
+    row.className = 'ev-row' + (ef.hidden ? ' hidden-ev' : '') + (hasOverride ? ' edited' : '');
+    row.dataset.id = ev.id;
+
+    // current display values (pending > override > raw)
+    const curName  = pending.name  !== undefined ? pending.name  : ef.name;
+    const curStart = pending.start !== undefined ? pending.start : ef.start;
+    const curEnd   = pending.end   !== undefined ? pending.end   : (ef.end || '');
+    const curRoom  = pending.roomId !== undefined ? pending.roomId : ef.roomId;
+    const curHidden = pending.hidden !== undefined ? pending.hidden : ef.hidden;
+
+    row.innerHTML = `
+      <!-- Date -->
+      <div class="td td-date">
+        <span class="date-day">${pad2(d.getDate())}/${pad2(d.getMonth()+1)}</span>
+        <span class="date-weekday">${weekday}</span>
+      </div>
+
+      <!-- Name -->
+      <div class="td">
+        <input class="editable" type="text" data-field="name" data-id="${ev.id}"
+          value="${escHtml(curName)}" placeholder="Nome do evento">
+      </div>
+
+      <!-- Room -->
+      <div class="td">
+        <select class="editable" data-field="roomId" data-id="${ev.id}">
+          ${rooms.map(r => `<option value="${r.id}" ${r.id === curRoom ? 'selected' : ''}>${r.name.replace(/\s*\(.*\)/,'').trim()}</option>`).join('')}
+        </select>
+      </div>
+
+      <!-- Time -->
+      <div class="td td-time">
+        <div class="time-inputs">
+          <input class="editable" type="time" data-field="start" data-id="${ev.id}" value="${curStart}">
+          <span class="time-sep">→</span>
+          <input class="editable" type="time" data-field="end" data-id="${ev.id}" value="${curEnd}">
+        </div>
+      </div>
+
+      <!-- Visible toggle -->
+      <div class="td vis-toggle">
+        <label class="toggle" title="${curHidden ? 'Oculto — clique para mostrar' : 'Visível — clique para ocultar'}">
+          <input type="checkbox" data-field="hidden" data-id="${ev.id}" ${curHidden ? '' : 'checked'}>
+          <span class="toggle-track"></span>
+          <span class="toggle-thumb"></span>
+        </label>
+      </div>
+
+      <!-- Actions -->
+      <div class="td td-actions">
+        ${hasPending ? `
+          <button class="row-btn save" data-action="save" data-id="${ev.id}" title="Salvar alterações">✓</button>
+          <button class="row-btn discard" data-action="discard" data-id="${ev.id}" title="Descartar">✕</button>
+        ` : hasOverride ? `
+          <button class="row-btn discard" data-action="reset" data-id="${ev.id}" title="Restaurar original" style="font-size:11px">↺</button>
+        ` : '<span style="font-size:11px;color:var(--mu);padding-right:6px;">—</span>'}
+      </div>
+    `;
+
+    list.appendChild(row);
+  });
+
+  // — event delegation —
+  list.addEventListener('input', onFieldInput);
+  list.addEventListener('change', onFieldChange);
+  list.addEventListener('click', onActionClick);
+  updateUnsavedBar();
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function onFieldInput(e) {
+  const el = e.target;
+  if (!el.dataset.field || !el.dataset.id) return;
+  if (el.dataset.field === 'hidden') return; // handled by change
+  markPending(el.dataset.id, el.dataset.field, el.value);
+}
+
+function onFieldChange(e) {
+  const el = e.target;
+  if (!el.dataset.field || !el.dataset.id) return;
+  if (el.dataset.field === 'hidden') {
+    // toggle: invert checked → hidden
+    markPending(el.dataset.id, 'hidden', !el.checked);
+    // auto-save toggle immediately
+    savePending(el.dataset.id);
+    return;
+  }
+  markPending(el.dataset.id, el.dataset.field, el.value);
+}
+
+function markPending(id, field, value) {
+  if (!pendingChanges[id]) pendingChanges[id] = {};
+  const raw = rawEvents.find(e => e.id === id);
+  const ov = getOverride(id);
+  // compare to current saved value
+  const savedVal = ov[field] !== undefined ? ov[field] : (raw ? raw[field] : undefined);
+  if (String(value) === String(savedVal)) {
+    delete pendingChanges[id][field];
+    if (!Object.keys(pendingChanges[id]).length) delete pendingChanges[id];
+  } else {
+    pendingChanges[id][field] = value;
+  }
+  updateRowActions(id);
+  updateUnsavedBar();
+}
+
+function updateRowActions(id) {
+  const row = document.querySelector(`.ev-row[data-id="${id}"]`);
+  if (!row) return;
+  const hasPending = pendingChanges[id] && Object.keys(pendingChanges[id]).length > 0;
+  const hasOverride = Object.keys(getOverride(id)).length > 0;
+  const actDiv = row.querySelector('.td-actions');
+  if (actDiv) {
+    if (hasPending) {
+      actDiv.innerHTML = `
+        <button class="row-btn save" data-action="save" data-id="${id}" title="Salvar">✓</button>
+        <button class="row-btn discard" data-action="discard" data-id="${id}" title="Descartar">✕</button>`;
+    } else if (hasOverride) {
+      actDiv.innerHTML = `<button class="row-btn discard" data-action="reset" data-id="${id}" title="Restaurar original" style="font-size:11px">↺</button>`;
+    } else {
+      actDiv.innerHTML = '<span style="font-size:11px;color:var(--mu);padding-right:6px;">—</span>';
+    }
+  }
+  // update row classes
+  row.classList.toggle('edited', hasOverride || hasPending);
+}
+
+function onActionClick(e) {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const { action, id } = btn.dataset;
+  if (action === 'save')    savePending(id);
+  if (action === 'discard') discardPending(id);
+  if (action === 'reset')   resetOverride(id);
+}
+
+function savePending(id) {
+  const pending = pendingChanges[id];
+  if (!pending || !Object.keys(pending).length) return;
+  setOverride(id, pending);
+  delete pendingChanges[id];
+  toast('Alterações salvas ✓', 'ok');
+  renderTable();
+}
+
+function discardPending(id) {
+  delete pendingChanges[id];
+  renderTable();
+}
+
+function resetOverride(id) {
+  delete overrides[id];
+  saveOverrides();
+  toast('Evento restaurado ao original', 'info');
+  renderTable();
+}
+
+function saveAll() {
+  Object.keys(pendingChanges).forEach(id => savePending(id));
+  toast('Todas as alterações salvas ✓', 'ok');
+}
+
+function updateUnsavedBar() {
+  const count = Object.keys(pendingChanges).length;
+  document.getElementById('unsaved-bar').classList.toggle('visible', count > 0);
+}
+
+// ─── EXPORT / IMPORT ──────────────────────────────────
+function exportJSON() {
+  const data = { version: 1, exported: new Date().toISOString(), overrides };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `agenda-overrides-${year}-${pad2(month+1)}.json`;
+  a.click();
+  toast('JSON exportado com sucesso', 'ok');
+}
+
+function importJSON(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.overrides) {
+        overrides = { ...overrides, ...data.overrides };
+        saveOverrides();
+        renderTable();
+        toast(`Importado com sucesso (${Object.keys(data.overrides).length} overrides)`, 'ok');
+      } else {
+        toast('Arquivo inválido — campo "overrides" não encontrado', 'err');
+      }
+    } catch(_) {
+      toast('Erro ao ler o arquivo JSON', 'err');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ─── MONTH NAV ────────────────────────────────────────
+document.getElementById('btn-prev').onclick = () => { month--; if(month<0){month=11;year--;} pendingChanges={}; init(); };
+document.getElementById('btn-next').onclick = () => { month++; if(month>11){month=0;year++;} pendingChanges={}; init(); };
+
+// ─── FILTER BTNS ──────────────────────────────────────
+['filter-all','filter-visible','filter-hidden'].forEach(id => {
+  document.getElementById(id).onclick = function() {
+    filterVis = { 'filter-all':'all','filter-visible':'visible','filter-hidden':'hidden' }[id];
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    renderTable();
+  };
+});
+
+document.getElementById('save-all-btn').onclick = saveAll;
+document.getElementById('export-btn').onclick = exportJSON;
+document.getElementById('export-btn2').onclick = exportJSON;
+
+function setupImportBtn(btnId, fileId) {
+  const btn = document.getElementById(btnId);
+  const file = document.getElementById(fileId);
+  if (btn && file) {
+    btn.onclick = () => file.click();
+    file.onchange = e => { if(e.target.files[0]) importJSON(e.target.files[0]); };
+  }
+}
+setupImportBtn('import-btn', 'import-file');
+setupImportBtn('import-btn2', 'import-file');
+
+// ─── TOAST ────────────────────────────────────────────
+function toast(msg, type='ok', duration=2800) {
+  const wrap = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(() => {
+    t.style.animation = 'tout .25s ease forwards';
+    setTimeout(() => t.remove(), 300);
+  }, duration);
+}
+
+// ─── INIT ─────────────────────────────────────────────
+async function init() {
+  loadOverrides();
+  document.getElementById('mlabel').textContent = MONTHS[month] + ' ' + year;
+  document.getElementById('ev-list').innerHTML = '<div class="loading"><div class="spin"></div><div style="font-size:13px;color:var(--mu2)">Carregando...</div></div>';
+
+  try {
+    await loadRooms();
+    await loadEvents();
+    buildRoomChips();
+    renderTable();
+  } catch(err) {
+    document.getElementById('ev-list').innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">⚠️</div>
+        <div style="color:var(--mu2)">Não foi possível carregar os eventos.<br><small style="color:var(--mu)">${err.message}</small></div>
+        <button onclick="init()" style="margin-top:14px;padding:7px 18px;border-radius:8px;border:1px solid var(--bd2);background:var(--sf);color:var(--mu2);cursor:pointer;font-size:12px;font-family:inherit">Tentar novamente</button>
+      </div>`;
+  }
+}
+
+if (isLoggedIn()) init();
+</script>
+</body>
+</html>
